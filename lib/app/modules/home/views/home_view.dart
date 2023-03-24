@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 import '../controllers/home_controller.dart';
 
@@ -11,7 +12,7 @@ class HomeView extends GetView<HomeController> {
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(80),
         child: Container(
-          padding: const EdgeInsets.fromLTRB(20, 53, 20, 0),
+          padding: const EdgeInsets.fromLTRB(20, 60, 20, 0),
           alignment: Alignment.centerLeft,
           color: Colors.blue,
           child: Column(
@@ -23,7 +24,7 @@ class HomeView extends GetView<HomeController> {
               ),
               const SizedBox(height: 7),
               Text(
-                "${controller.decode["name"]}",
+                "${controller.getUser()['name']}",
                 style:
                     const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
               ),
@@ -40,17 +41,118 @@ class HomeView extends GetView<HomeController> {
           ListView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
             children: [
+              const SizedBox(height: 7),
               Container(
-                color: Colors.red,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.blue[600],
+                ),
                 alignment: Alignment.topLeft,
                 height: Get.height / 3.8,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
-                    const Text(
-                      "Last Attendance",
-                      style:
-                          TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                    )
+                    const SizedBox(height: 10),
+                    TextButton(
+                      onPressed: () {
+                        controller.getLastKehadiran();
+                      },
+                      child: const Text(
+                        "Kehadiran Terakhir",
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: FutureBuilder(
+                        future: controller.getLastKehadiran(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
+                          } else if (snapshot.hasData) {
+                            return Obx(
+                              () => ListView(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        DateFormat.yMMMMd().format(DateTime.now()),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 17,
+                                        ),
+                                      ),
+                                      Text(
+                                        controller.kehadiran['data']
+                                                ["hari_${controller.getDateNow()}"] ??
+                                            '-',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        DateFormat.yMMMMd().format(
+                                            DateTime.now().subtract(const Duration(days: 1))),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 17,
+                                        ),
+                                      ),
+                                      Text(
+                                        controller.kehadiran['data']
+                                                ["hari_${controller.getDateYesterday()}"] ??
+                                            '-',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        DateFormat.yMMMMd().format(
+                                            DateTime.now().subtract(const Duration(days: 2))),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 17,
+                                        ),
+                                      ),
+                                      Text(
+                                        controller.kehadiran['data']
+                                                ["hari_${controller.getDateBfYesterday()}"] ??
+                                            '-',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          } else {
+                            return const Center(child: Text('No data found'));
+                          }
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),

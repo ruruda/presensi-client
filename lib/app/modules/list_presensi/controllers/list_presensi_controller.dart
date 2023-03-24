@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:client/app/data/models/user_models.dart';
 import 'package:client/app/routes/app_pages.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -7,12 +5,18 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:intl/intl.dart';
 
-class AccountController extends GetxController {
+class ListPresensiController extends GetxController {
   final dio = Dio();
   final _token = GetStorage().read("access_token");
 
-  Future getUserData() async {
+  String getDate() {
+    var now = DateTime.now();
+    return DateFormat.yMMMM().format(now).toString();
+  }
+
+  Future getKehadiran() async {
     try {
       bool hasExpired = JwtDecoder.isExpired(_token);
       if (hasExpired) {
@@ -26,22 +30,17 @@ class AccountController extends GetxController {
         );
         return Get.offAllNamed(Routes.LOGIN);
       }
+      var decode = JwtDecoder.decode(_token);
       var response = await dio.get(
-        "http://192.168.100.133:8000/api/auth/me",
+        "http://192.168.100.133:8000/api/user/kehadiran/${decode['uuid']}",
         options: Options(
           headers: {'Authorization': "Bearer $_token"},
         ),
       );
-      User user = userFromJson(jsonEncode(response.data));
-      return user;
+      var kehadiran = response.data;
+      return kehadiran;
     } catch (err) {
-      // print(err.toString());
       rethrow;
     }
-  }
-
-  void logout() {
-    GetStorage().remove("access_token");
-    Get.offAllNamed(Routes.LOGIN);
   }
 }
